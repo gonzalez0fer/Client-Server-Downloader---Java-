@@ -17,6 +17,7 @@ public class servidor{
       socket = server.accept();
 
       entrada = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+      salida = new DataOutputStream(socket.getOutputStream());
       String mensaje = entrada.readLine();
 
       if (mensaje.equals("LISTA_LIBROS")) {
@@ -25,16 +26,11 @@ public class servidor{
         File f = new File(sDirectorio);
         File[] ficheros = f.listFiles();
         for (int x=0;x<ficheros.length;x++){
-          System.out.println(ficheros[x].getName());
+          salida.writeUTF(ficheros[x].getName());
         }
 
       }
-
-      System.out.println(mensaje);
-
-
-      salida = new DataOutputStream(socket.getOutputStream());
-      salida.writeUTF("recibido");
+    salida.writeUTF("recibido");
     }catch (Exception e){};
 
   }
