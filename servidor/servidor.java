@@ -2,36 +2,24 @@ import java.net.*;
 import java.io.*;
 import java.util.*;
 
+public class servidor {
+  int portNumber = 9000;
 
-public class servidor{
-  ServerSocket server;
-  Socket socket;
-  int puerto = 9000;
-  DataOutputStream salida;
-  BufferedReader entrada;
-
-  public void iniciar(){
-    try {
-      server = new ServerSocket(puerto);
-      socket = new Socket();
-      socket = server.accept();
-
-      entrada = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-      salida = new DataOutputStream(socket.getOutputStream());
-      String mensaje = entrada.readLine();
-
-      if (mensaje.equals("LISTA_LIBROS")) {
-
-        String sDirectorio = "/home/fernando/Universidad/Redes/Cliente-Servidor/servidor/books";
-        File f = new File(sDirectorio);
-        File[] ficheros = f.listFiles();
-        for (int x=0;x<ficheros.length;x++){
-          salida.writeUTF(ficheros[x].getName());
-        }
-
+  public void iniciar() {
+    boolean listening = true;
+    int i = 1;
+    try (ServerSocket server = new ServerSocket(portNumber)) {
+      while (listening) {
+        new LibraryHandler(server.accept(), i).start();
+        System.out.println("Thread " + i + " open");
+        i++;
       }
-    salida.writeUTF("recibido");
-    }catch (Exception e){};
-
+    } catch (IOException e) {
+      System.err.println("No se pudo escuchar en el puerto " + portNumber);
+      System.exit(-1);
+    } catch (Exception e) {
+      System.out.println(e);
+      System.exit(-1);
+    }
   }
 }
