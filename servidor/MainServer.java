@@ -1,6 +1,6 @@
 import java.util.*;
 
-public class Main{
+public class MainServer {
   public static void main (String[] args){
     servidor s = new servidor();
     s.iniciar();

@@ -3,7 +3,7 @@ import java.io.*;
 import java.util.*;
 
 public class servidor {
-  int portNumber = 9000;
+  final int portNumber = 9000;
 
   public void iniciar() {
     boolean listening = true;

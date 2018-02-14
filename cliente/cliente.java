@@ -3,8 +3,8 @@ import java.io.*;
 import java.util.*;
 
 public class cliente {
-  int portNumber = 9000;
-  String ip = "127.0.0.1";
+  final int portNumber = 9000;
+  final String ip = "127.0.0.1";
 
   public void iniciar() {
     System.out.println("Bienvenido usuario, desea conectarse? S/N");
@@ -18,7 +18,7 @@ public class cliente {
 
     try (
       Socket client = new Socket(ip, portNumber);
-      PrintStream out = new PrintStream(client.getOutputStream());
+      PrintWriter out = new PrintWriter(client.getOutputStream(), true);
       BufferedReader in = new BufferedReader(
         new InputStreamReader(client.getInputStream()));
     ) {
@@ -43,12 +43,27 @@ public class cliente {
         fromUser = stdIn.readLine();
         if (fromUser != null) {
           if (fromUser.equals("3")) {
-            System.out.println("Indique el libro que desea descargar:");
-            String book = scan.next();
+            String sFile = "d3sd17t4.pdf";
+            fromUser += ";" + sFile;
+
+            out.println(fromUser);
+
+            InputStream is = client.getInputStream();
+            OutputStream os = new FileOutputStream(
+              System.getProperty("user.dir") + File.separator + sFile);
+
+            int count;
+            byte[] buffer = new byte[8192]; // or 4096, or more
+            while ((count = is.read(buffer)) > 0)
+            {
+              os.write(buffer, 0, count);
+            }
+          } else {
+            out.println(fromUser);
           }
 
           //System.out.println("Client: " + fromUser);
-          out.println(fromUser);
+          //out.println(fromUser);
         }
       }
     } catch (UnknownHostException e) {
