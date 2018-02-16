@@ -11,14 +11,14 @@ public class servidor {
     try (ServerSocket server = new ServerSocket(portNumber)) {
       while (listening) {
         new LibraryHandler(server.accept(), i).start();
-        System.out.println("Thread " + i + " open");
+        System.out.println("Thread " + i + " open.");
         i++;
       }
     } catch (IOException e) {
-      System.err.println("No se pudo escuchar en el puerto " + portNumber);
+      System.err.println("Can't listen on port number " + portNumber + ".");
       System.exit(-1);
     } catch (Exception e) {
-      System.out.println(e);
+      e.printStackTrace();
       System.exit(-1);
     }
   }

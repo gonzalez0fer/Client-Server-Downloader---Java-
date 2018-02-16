@@ -5,6 +5,7 @@ import java.util.*;
 class LibraryHandler extends Thread {
   private Socket socket;
   private int threadNumber;
+  private final String FILES_DIRECTORY = System.getProperty("user.dir") + File.separator + "books";
 
   public LibraryHandler(Socket socket, int counter) {
     super("LibraryHandlerThread");
@@ -15,63 +16,84 @@ class LibraryHandler extends Thread {
   @Override
   public void run() {
     try (
-      PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+      OutputStream os = socket.getOutputStream();
+      PrintWriter out = new PrintWriter(os, true);
       BufferedReader in = new BufferedReader(
         new InputStreamReader(socket.getInputStream()));
     ) {
       String inputLine, outputLine;
 
-      outputLine = "connected";
+      outputLine = "Connected to the server.";
       out.println(outputLine);
 
       while ((inputLine = in.readLine()) != null) {
         String[] parts = inputLine.split(";");
-        String sFile = "";
+        String fileName = "";
+        String option = "";
 
         if (parts.length > 1) {
-          sFile = parts[1];
+          fileName = parts[1];
         }
-        inputLine = parts[0];
+        option = parts[0];
 
-        if (inputLine.equals("2")) {
-          File dir = new File(
-            System.getProperty("user.dir") + File.separator + "books");
-          File[] files = dir.listFiles();
-
-          String sFiles = "";
-          for (int i = 0; i < files.length; i++) {
-            sFiles += files[i].getName() + ";";
-          }
-          out.println(sFiles);
-        } else if (inputLine.equals("3")) {
-          File file = new File(
-            System.getProperty("user.dir") + File.separator + "books" + File.separator + sFile);
-          InputStream is = new FileInputStream(file);
-          OutputStream os = socket.getOutputStream();
-
-          int count;
-          byte[] buffer = new byte[8192]; // or 4096, or more
-          while ((count = is.read(buffer)) > 0)
-          {
-            os.write(buffer, 0, count);
-          }
-
-          try {
-            sleep(5000);
-          } catch (InterruptedException e) {
-            System.out.println("Interrumpido");
-          }
-          out.println("File sent");
-        } else if (inputLine.equals("5")) {
-          System.out.println("Closing thread " + threadNumber);
+        if (option.equals("2")) {
+          out.println(getFiles());
+        } else if (option.equals("3")) {
+          out.println(transferFiles(fileName, os));
+        } else if (option.equals("5")) {
+          System.out.println("Closing thread " + threadNumber + ".");
           out.println("Bye");
           break;
         } else {
-          out.println("option not recognized");
+          out.println("Option not recognized.");
         }
       }
     } catch (IOException e) {
       e.printStackTrace();
+    } catch (Exception e) {
+      e.printStackTrace();
     }
+  }
+
+  private String getFiles() {
+    File dir = new File(FILES_DIRECTORY);
+    File[] files = dir.listFiles();
+
+    String fileNames = "";
+    for (int i = 0; i < files.length; i++) {
+      fileNames += files[i].getName() + ";";
+    }
+
+    return "List of files in directory: " + fileNames;
+  }
+
+  private String transferFiles(String fileName, OutputStream os) {
+    try {
+      File file = new File(FILES_DIRECTORY + File.separator + fileName);
+
+      InputStream is = new FileInputStream(file);
+
+      DataOutputStream dos = new DataOutputStream(os);
+      dos.writeUTF(file.getName());
+      dos.writeLong((new byte[(int) file.length()]).length);
+
+      System.out.print("File transfer progress bar: ");
+      int bytesRead;
+      byte[] buffer = new byte[8192]; // or 4096, or more
+      while ((bytesRead = is.read(buffer)) > 0) {
+        os.write(buffer, 0, bytesRead);
+        System.out.print("|"); //Reading progress indicator
+        sleep(500);
+      }
+      os.flush();
+      is.close();
+      System.out.println();
+    } catch (FileNotFoundException e) {
+      return "The file indicated was not found.";
+    } catch (Exception e) {
+      e.printStackTrace();
+      return "There was an error transfering the file.";
+    }
+    return "File recieved.";
   }
 }
