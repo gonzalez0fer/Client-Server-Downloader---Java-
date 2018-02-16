@@ -11,8 +11,10 @@ public class servidor {
     try (ServerSocket server = new ServerSocket(portNumber)) {
       while (listening) {
         new LibraryHandler(server.accept(), i).start();
+        InetAddress cliaddr = server.getInetAddress();
+        int cliport = server.getLocalPort();
         System.out.println("Thread " + i + " open.");
-        i++;
+        System.out.println("client ip addrs: " + cliaddr.toString() + " at port: " + cliport);
       }
     } catch (IOException e) {
       System.err.println("Can't listen on port number " + portNumber + ".");
