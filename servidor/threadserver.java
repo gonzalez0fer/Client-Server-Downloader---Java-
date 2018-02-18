@@ -71,11 +71,11 @@ class LibraryHandler extends Thread {
     try {
       File file = new File(FILES_DIRECTORY + File.separator + fileName);
 
-      InputStream is = new FileInputStream(file);
-
       DataOutputStream dos = new DataOutputStream(os);
       dos.writeUTF(file.getName());
       dos.writeLong((new byte[(int) file.length()]).length);
+
+      InputStream is = new FileInputStream(file);
 
       System.out.print("File transfer progress bar: ");
       int bytesRead;

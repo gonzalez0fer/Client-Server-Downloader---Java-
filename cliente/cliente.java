@@ -3,9 +3,18 @@ import java.io.*;
 import java.util.*;
 
 public class cliente {
-  final int portNumber = 9000;
+  int portNumber1;
+  int portNumber2;
+  int portNumber3;
   final String ip = "127.0.0.1";
   final String ROOT_DIRECTORY = System.getProperty("user.dir");
+
+  public cliente(int portNumber1, int portNumber2, int portNumber3) {
+    super();
+    this.portNumber1 = portNumber1;
+    this.portNumber2 = portNumber2;
+    this.portNumber3 = portNumber3;
+  }
 
   public void iniciar() {
     System.out.println("Welcome user, would you like to connect to the server? Y/N");
@@ -19,7 +28,7 @@ public class cliente {
     }
 
     try (
-      Socket socket = new Socket(ip, portNumber);
+      Socket socket = new Socket(ip, portNumber1);
       InputStream is = socket.getInputStream();
       PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
       BufferedReader in = new BufferedReader(
@@ -36,10 +45,10 @@ public class cliente {
 
         System.out.println();
         System.out.println("Choose an option from the menu:");
-        System.out.println("    1. ESTADO_DESCARGAS");
-        System.out.println("    2. LISTA_LIBROS");
-        System.out.println("    3. SOLICITUD_LIBRO");
-        System.out.println("    4. LIBROS_DESCARGADOSXSERVIDOR");
+        System.out.println("    1. Download Status");
+        System.out.println("    2. Books List");
+        System.out.println("    3. Request a Book");
+        System.out.println("    4. Books Downloaded");
         System.out.println("    5. Quit");
 
         fromUser = stdIn.readLine();
@@ -81,6 +90,7 @@ public class cliente {
       System.exit(1);
     } catch (Exception e) {
       System.out.println(e);
+      System.exit(1);
     }
   }
 }
