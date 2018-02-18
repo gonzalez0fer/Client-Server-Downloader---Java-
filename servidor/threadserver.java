@@ -2,13 +2,13 @@ import java.net.*;
 import java.io.*;
 import java.util.*;
 
-class LibraryHandler extends Thread {
+class ServerThreadHandler extends Thread {
   private Socket socket;
   private int threadNumber;
   private final String FILES_DIRECTORY = System.getProperty("user.dir") + File.separator + "books";
 
-  public LibraryHandler(Socket socket, int counter) {
-    super("LibraryHandlerThread");
+  public ServerThreadHandler(Socket socket, int counter) {
+    super("ServerThreadHandler");
     this.socket = socket;
     this.threadNumber = counter;
   }
@@ -23,8 +23,8 @@ class LibraryHandler extends Thread {
     ) {
       String inputLine, outputLine;
 
-      outputLine = "Connected to the server.";
-      out.println(outputLine);
+      //outputLine = "Connected to the server.";
+      //out.println(outputLine);
 
       while ((inputLine = in.readLine()) != null) {
         String[] parts = inputLine.split(";");
@@ -39,7 +39,7 @@ class LibraryHandler extends Thread {
         if (option.equals("2")) {
           out.println(getFiles());
         } else if (option.equals("3")) {
-          out.println(transferFiles(fileName, os));
+          transferFiles(fileName, os);
         } else if (option.equals("5")) {
           System.out.println("Closing thread " + threadNumber + ".");
           out.println("Bye");
