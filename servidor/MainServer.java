@@ -25,7 +25,7 @@ public class MainServer {
       System.exit(-1);
     }
 
-    servidor server = new servidor(portNumber);
-    server.iniciar();
+    ServerHandler server = new ServerHandler(portNumber);
+    server.start();
   }
 }

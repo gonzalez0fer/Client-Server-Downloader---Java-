@@ -31,7 +31,7 @@ public class MainClient {
       System.exit(-1);
     }
 
-    cliente c = new cliente(portNumber1, portNumber2, portNumber3);
-    c.iniciar();
+    ClientHandler c = new ClientHandler(portNumber1, portNumber2, portNumber3);
+    c.start();
   }
 }
