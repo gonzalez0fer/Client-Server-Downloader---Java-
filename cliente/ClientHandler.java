@@ -6,6 +6,7 @@ public class ClientHandler {
   int portNumber1;
   int portNumber2;
   int portNumber3;
+  String clientName = "Someone";
   final String ip = "127.0.0.1";
   final String ROOT_DIRECTORY = System.getProperty("user.dir");
 
@@ -21,13 +22,8 @@ public class ClientHandler {
       BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
       String fromUser;
 
-      System.out.println("Welcome user, would you like to connect to the server? Y/N");
-      String init = stdIn.readLine();
-
-      if (!init.trim().toLowerCase().equals("y")) {
-        System.out.println("See you later.");
-        System.exit(1);
-      }
+      System.out.print("Welcome user, please tell me your username: ");
+      clientName = stdIn.readLine();
 
       while (true) {
         System.out.println();
@@ -47,7 +43,9 @@ public class ClientHandler {
         if (fromUser.equals("1")) {
           continue;
         } else if (fromUser.equals("2")) {
-          getBookList();
+          getBookList(portNumber1);
+          getBookList(portNumber2);
+          getBookList(portNumber3);
         } else if (fromUser.equals("3")) {
           System.out.print("Indicate file name: ");
           downloadBook(stdIn.readLine());
@@ -66,30 +64,36 @@ public class ClientHandler {
     }
   }
 
-  private void getBookList() {
+  private void getBookList(int portNumber) {
     try (
-      Socket socket = new Socket(ip, portNumber1);
+      Socket socket = new Socket(ip, portNumber);
       InputStream is = socket.getInputStream();
       PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
       BufferedReader in = new BufferedReader(new InputStreamReader(is));
     ) {
+      String bookList = "";
       out.println("2"); //Send option to the server
-      System.out.println(in.readLine()); //Print out the response from the server
+      bookList = in.readLine();
+      System.out.println("Server with ip " + ip + " and port " + portNumber + ".");
+      for (String book : bookList.split(";")) {
+        System.out.println(book);
+      }
+      System.out.println();
     } catch (UnknownHostException e) {
       System.err.println("Host with ip number " + ip + " is unknown.");
-      System.exit(1);
     } catch (IOException e) {
-      System.err.println("Couldn't stablish I/O with host with ip number " + ip + ".");
-      System.exit(1);
+      System.err.println("Couldn't stablish I/O with host with ip number " + 
+        ip + " and port " + portNumber + ".");
     } catch (Exception e) {
       System.err.println(e.getMessage());
-      System.exit(1);
     }
   }
 
   private void downloadBook(String bookName) {
     try {
-      new ClientThreadHandler(ip, portNumber1, bookName).start();
+      new ClientThreadHandler(
+        ip, portNumber1, portNumber2, portNumber3, bookName, clientName
+      ).start();
     } catch (Exception e) {
       System.err.println(e.getMessage());
     }

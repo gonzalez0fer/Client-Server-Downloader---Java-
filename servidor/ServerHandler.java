@@ -17,15 +17,11 @@ public class ServerHandler {
       System.out.println("Listening on port " + portNumber);
       while (listening) {
         new ServerThreadHandler(server.accept(), i).start();
-        // System.out.println("Thread " + i + " open.");
-        // System.out.println("Client with IP " + server.getInetAddress().getHostName() + " connected.");
-        // i++;
       }
     } catch (IOException e) {
       System.err.println("Can't listen on port number " + portNumber + ".");
     } catch (Exception e) {
       System.err.println(e.getMessage());
-      //e.printStackTrace();
     }
   }
 }

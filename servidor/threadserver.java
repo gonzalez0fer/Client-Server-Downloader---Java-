@@ -64,7 +64,7 @@ class ServerThreadHandler extends Thread {
       fileNames += files[i].getName() + ";";
     }
 
-    return "List of files in directory: " + fileNames;
+    return fileNames;
   }
 
   private String transferFiles(String fileName, OutputStream os) {
