@@ -68,17 +68,19 @@ public class ClientHandler {
     try (
       Socket socket = new Socket(ip, portNumber);
       InputStream is = socket.getInputStream();
-      PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-      BufferedReader in = new BufferedReader(new InputStreamReader(is));
+      OutputStream os = socket.getOutputStream();
+      BufferedReader br = new BufferedReader(new InputStreamReader(is));
+      PrintWriter pw = new PrintWriter(os, true);
     ) {
       String bookList = "";
-      out.println("2"); //Send option to the server
-      bookList = in.readLine();
+
+      pw.println("getBooks"); //Send option to the server
+      bookList = br.readLine();
+
       System.out.println("Server with ip " + ip + " and port " + portNumber + ".");
       for (String book : bookList.split(";")) {
         System.out.println(book);
       }
-      System.out.println();
     } catch (UnknownHostException e) {
       System.err.println("Host with ip number " + ip + " is unknown.");
     } catch (IOException e) {

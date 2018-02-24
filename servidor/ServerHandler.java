@@ -12,11 +12,10 @@ public class ServerHandler {
 
   public void start() {
     boolean listening = true;
-    int i = 1;
     try (ServerSocket server = new ServerSocket(portNumber)) {
       System.out.println("Listening on port " + portNumber);
       while (listening) {
-        new ServerThreadHandler(server.accept(), i).start();
+        new ServerThreadHandler(server.accept()).start();
       }
     } catch (IOException e) {
       System.err.println("Can't listen on port number " + portNumber + ".");

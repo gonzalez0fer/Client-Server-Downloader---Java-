@@ -12,7 +12,8 @@ class ClientThreadHandler extends Thread {
   private long fileSize = 0;
   private int currentBytesRead = 0;
   private final String ROOT_DIRECTORY = System.getProperty("user.dir");
-  private final String DOWNLOAD_DIRECTORY = System.getProperty("user.dir") + "/downloads";
+  private final String DOWNLOAD_DIRECTORY = System.getProperty("user.dir") + 
+    File.separator + "downloads";
 
   public ClientThreadHandler(
     String ip, 
@@ -34,7 +35,6 @@ class ClientThreadHandler extends Thread {
   @Override
   public void run() {
     int tries = 3;
-    int flags = 3;
 
     //Get file size from the server for whichever server finds it first.
     if (!getFileSize(portNumber1) && !getFileSize(portNumber2) && !getFileSize(portNumber3)) {
@@ -42,8 +42,9 @@ class ClientThreadHandler extends Thread {
         " or couldn't stablish connection to the servers.");
       return;
     }
+    if (fileSize == 0) return;
 
-    //Download file concurrently
+    // Download file concurrently
     while (this.fileSize > 0) {
       if (downloadFile(portNumber1)) {
         continue;
@@ -58,7 +59,11 @@ class ClientThreadHandler extends Thread {
         System.out.println("Couldn't download book " + bookName + ".");
         return;
       }
-      sleep(6000 / tries);
+      try {
+        sleep(6000 / tries);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
       tries--;
     }
   }
@@ -68,11 +73,11 @@ class ClientThreadHandler extends Thread {
       Socket socket = new Socket(ip, portNumber);
       InputStream is = socket.getInputStream();
       OutputStream os = socket.getOutputStream();
-      DataOutputStream dos = new DataOutputStream(os);
       DataInputStream dis = new DataInputStream(is);
+      PrintWriter pw = new PrintWriter(os, true);
     ) {
-      dos.writeUTF("fileSize");
-      dos.writeUTF(bookName);
+      pw.println("getFileSize");
+      pw.println(bookName);
 
       this.fileSize = dis.readLong(); //Get file size from the server
     } catch (UnknownHostException e) {
@@ -86,15 +91,17 @@ class ClientThreadHandler extends Thread {
     return true;
   }
 
-  private boolean downloadFile(int portNumber, int fileSize) {
+  private boolean downloadFile(int portNumber) {
     try (
       Socket socket = new Socket(ip, portNumber);
       InputStream is = socket.getInputStream();
-      PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-      BufferedReader in = new BufferedReader(new InputStreamReader(is));
-      DataInputStream dis = new DataInputStream(is);
+      OutputStream os = socket.getOutputStream();
+      DataOutputStream dos = new DataOutputStream(os);
+      PrintWriter pw = new PrintWriter(os, true);
     ) {
-      out.println("3;" + bookName); //Send option to the server along with file name
+      pw.println("getFile"); //Send option to the server
+      pw.println(bookName); //Send file name to the server
+      pw.println(fileSize); //Send file size to the server
 
       OutputStream fileWriter = 
         new FileOutputStream(DOWNLOAD_DIRECTORY + File.separator + bookName);
@@ -110,14 +117,13 @@ class ClientThreadHandler extends Thread {
         fileSize -= bytesRead;
       }
       fileWriter.close();
-      System.out.println();
     } catch (UnknownHostException e) {
-      System.err.println("Host with ip number " + ip + " and port " + port + 
+      System.err.println("Host with ip number " + ip + " and port " + portNumber + 
         " is unknown.");
       return false;
     } catch (IOException e) {
       System.err.println("Couldn't stablish I/O with host with ip number " + 
-        ip + " and port " + port + ".");
+        ip + " and port " + portNumber + ".");
       return false;
     } catch (Exception e) {
       System.err.println(e.getMessage());
