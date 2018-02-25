@@ -22,7 +22,7 @@ class ServerThreadHandler extends Thread {
       PrintWriter pw = new PrintWriter(os, true);
     ) {
       String inputLine, fileName;
-      long fileSize;
+      long fileSize, offset;
 
       while ((inputLine = br.readLine()) != null) {
         if (inputLine.equals("getBooks")) {
@@ -33,7 +33,9 @@ class ServerThreadHandler extends Thread {
         } else if (inputLine.equals("getFile")) {
           fileName = br.readLine();
           fileSize = Long.parseLong(br.readLine());
-          transferFiles(fileName, fileSize, os);
+          offset = Long.parseLong(br.readLine());
+          transferFiles(fileName, fileSize, offset, os);
+          break;
         }
       }
     } catch (IOException e) {
@@ -43,6 +45,7 @@ class ServerThreadHandler extends Thread {
     }
   }
 
+//#region Get list of files method
   private String getFiles() {
     File dir = new File(FILES_DIRECTORY);
     File[] files = dir.listFiles();
@@ -54,7 +57,9 @@ class ServerThreadHandler extends Thread {
 
     return fileNames;
   }
+//#endregion
 
+//#region Get file size method
   private long getFileSize(String fileName) {
     try {
       File file = new File(FILES_DIRECTORY + File.separator + fileName);
@@ -64,26 +69,35 @@ class ServerThreadHandler extends Thread {
     }
     return 0;
   }
+//#endregion
 
-  private void transferFiles(String fileName, long fileSize, OutputStream os) {
+//#region Transfer file method
+  private void transferFiles(String fileName, long fileSize, long offset, OutputStream os) {
     try {
       File file = new File(FILES_DIRECTORY + File.separator + fileName);
       InputStream is = new FileInputStream(file);
 
-      System.out.print("File transfer progress bar: ");
       int bytesRead;
       byte[] buffer = new byte[8192]; // or 4096, or more
-      while ((bytesRead = is.read(buffer)) > 0) {
+
+      if (offset > 0) {
+        is.skip(fileSize - offset);
+        fileSize = offset;
+      } //Skip number of bytes sent before
+
+      while ((bytesRead = is.read(buffer)) >= 0) {
         os.write(buffer, 0, bytesRead);
-        System.out.print("|"); //Reading progress indicator
         sleep(500);
       }
       is.close();
-      os.flush();
+      os.close();
     } catch (FileNotFoundException e) {
       System.out.println("File " + fileName + "was not found");
+    } catch (SocketException e) {
+      System.out.println("Connection with '" + "' lost");
     } catch (Exception e) {
       e.printStackTrace();
     }
   }
+//#endregion
 }
