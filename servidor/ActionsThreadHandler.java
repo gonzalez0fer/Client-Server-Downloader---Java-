@@ -1,10 +1,16 @@
 import java.net.*;
 import java.io.*;
 import java.util.*;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 class ActionsThreadHandler extends Thread {
   private Socket socket;
-  private final String FILES_DIRECTORY = System.getProperty("user.dir") + File.separator + "books";
+  private final String ROOT_DIRECTORY = System.getProperty("user.dir");
+  private final String FILES_DIRECTORY = ROOT_DIRECTORY + File.separator + "books";
+  private final String TEMP_DIRECTORY = ROOT_DIRECTORY + File.separator + "temp";
 
   public ActionsThreadHandler(Socket socket) {
     super("ActionsThreadHandler");
@@ -21,7 +27,7 @@ class ActionsThreadHandler extends Thread {
       DataOutputStream dos = new DataOutputStream(os);
       PrintWriter pw = new PrintWriter(os, true);
     ) {
-      String inputLine, fileName;
+      String inputLine, fileName, clientName;
       long fileSize, offset;
 
       while ((inputLine = br.readLine()) != null) {
@@ -34,7 +40,8 @@ class ActionsThreadHandler extends Thread {
           fileName = br.readLine();
           fileSize = Long.parseLong(br.readLine());
           offset = Long.parseLong(br.readLine());
-          transferFiles(fileName, fileSize, offset, os);
+          clientName = br.readLine();
+          transferFiles(fileName, fileSize, offset, clientName, os);
           break;
         }
       }
@@ -72,7 +79,13 @@ class ActionsThreadHandler extends Thread {
 //#endregion
 
 //#region Transfer file method
-  private void transferFiles(String fileName, long fileSize, long offset, OutputStream os) {
+  private void transferFiles(
+    String fileName, 
+    long fileSize, 
+    long offset, 
+    String clientName, 
+    OutputStream os
+  ) {
     try {
       File file = new File(FILES_DIRECTORY + File.separator + fileName);
       InputStream is = new FileInputStream(file);
@@ -91,10 +104,52 @@ class ActionsThreadHandler extends Thread {
       }
       is.close();
       os.close();
+      writeJson(fileName, clientName);
     } catch (FileNotFoundException e) {
       System.out.println("File " + fileName + "was not found");
     } catch (SocketException e) {
       System.out.println("Connection with '" + "' lost");
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+//#endregion
+
+//#region Write JSON file with downloads
+  private void writeJson(String bookName, String clientName) {
+    String path = TEMP_DIRECTORY + File.separator + "downloads.json";
+    JSONParser parser = new JSONParser();
+    JSONObject rootObj = new JSONObject();
+    JSONObject bookObj = new JSONObject();
+    long count = 0;
+
+    //Try to read the JSON file in case it already exists.
+    try (FileReader reader = new FileReader(path)) {
+      rootObj = (JSONObject) parser.parse(reader);
+    } catch (FileNotFoundException e) {
+      //
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+
+    //Check if the book was already downloaded and if it wasn't then add its key
+    //to the JSON file.
+    if (rootObj.containsKey(bookName)) 
+    {
+      bookObj = (JSONObject) rootObj.get(bookName);
+      if (bookObj.containsKey(clientName)) {
+        count = (long) bookObj.get(clientName);
+        count++;
+        bookObj.put(clientName, count);
+      }
+    } else {
+      bookObj.put(clientName, 1);
+      rootObj.put(bookName, bookObj);
+    }
+
+    //Writes the JSON object to the downloads.json file
+    try (FileWriter writer = new FileWriter(path)) {
+      writer.write(rootObj.toJSONString());
     } catch (Exception e) {
       e.printStackTrace();
     }

@@ -114,6 +114,7 @@ class ClientThreadHandler extends Thread {
       pw.println("getFile"); //Send option to the server
       pw.println(bookName); //Send file name to the server
       pw.println(fileSize); //Send file size to the server
+      pw.println(clientName); //Send name of the client doing the request to the server
 
       int bytesRead;
       byte[] buffer = new byte[8192];

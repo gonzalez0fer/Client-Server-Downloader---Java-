@@ -26,3 +26,6 @@ cliente/downloads/
 cliente/temp/
 servidor/books/
 servidor/temp/
+
+#vs code configurations
+.vscode/

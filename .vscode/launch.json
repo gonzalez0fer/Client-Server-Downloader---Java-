@@ -6,12 +6,12 @@
   "configurations": [
     {
       "type": "java",
-      "name": "Debug (Launch)-Main",
+      "name": "Debug (Launch)",
       "request": "launch",
-      "cwd": "${workspaceFolder}",
+      "cwd": "${workspaceFolder}\\cliente",
       "console": "integratedTerminal",
-      "stopOnEntry": true,
-      "mainClass": "servidor",
+      "stopOnEntry": false,
+      "mainClass": "",
       "args": ""
     },
     {
