@@ -1,6 +1,10 @@
 import java.net.*;
 import java.io.*;
 import java.util.*;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 public class ClientHandler {
   int portNumber1;
@@ -9,6 +13,7 @@ public class ClientHandler {
   String clientName = "Someone";
   final String ip = "127.0.0.1";
   final String ROOT_DIRECTORY = System.getProperty("user.dir");
+  final String TEMP_DIRECTORY = System.getProperty("user.dir") + File.separator + "temp";
 
   public ClientHandler(int portNumber1, int portNumber2, int portNumber3) {
     super();
@@ -50,7 +55,7 @@ public class ClientHandler {
           System.out.print("Indicate file name: ");
           downloadBook(stdIn.readLine());
         } else if (fromUser.equals("4")) {
-          continue;
+          readJSON();
         } else if (fromUser.equals("5")) {
           break;
         } else {
@@ -64,6 +69,50 @@ public class ClientHandler {
     }
   }
 
+//#region Read JSON file with downloads for server
+  private void readJSON() {
+    JSONParser parser = new JSONParser();
+    try {
+      Object obj = parser.parse(new FileReader(TEMP_DIRECTORY + File.separator + "downloads.json"));
+      JSONObject jsonObj = (JSONObject)obj;
+
+      JSONArray files = (JSONArray)jsonObj.get("Server1");
+      if (files != null) {
+        System.out.println("Files downloaded from Server 1:");
+        Iterator<String> iterator = files.iterator();
+        while (iterator.hasNext()) {
+          System.out.println("\t" + iterator.next());
+        }
+      }
+
+      files = (JSONArray)jsonObj.get("Server2");
+      if (files != null) {
+        System.out.println("Files downloaded from Server 2:");
+        Iterator<String> iterator = files.iterator();
+        while (iterator.hasNext()) {
+          System.out.println("\t" + iterator.next());
+        }
+      }
+
+      files = (JSONArray)jsonObj.get("Server3");
+      if (files != null) {
+        System.out.println("Files downloaded from Server 1:");
+        Iterator<String> iterator = files.iterator();
+        while (iterator.hasNext()) {
+          System.out.println("\t" + iterator.next());
+        }
+      }
+    } catch (FileNotFoundException e) {
+      System.out.println("You haven't download anything yet.");
+    } catch (IOException e) {
+      e.printStackTrace();
+    } catch (ParseException e) {
+      e.printStackTrace();
+    }
+  }
+//#endregion
+
+//#region Get list of books method
   private void getBookList(int portNumber) {
     try (
       Socket socket = new Socket(ip, portNumber);
@@ -90,7 +139,9 @@ public class ClientHandler {
       System.err.println(e.getMessage());
     }
   }
+//#endregion
 
+//#region Download book from the servers
   private void downloadBook(String bookName) {
     try {
       new ClientThreadHandler(
@@ -100,4 +151,5 @@ public class ClientHandler {
       System.err.println(e.getMessage());
     }
   }
+//#endregion
 }
