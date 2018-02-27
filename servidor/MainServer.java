@@ -1,4 +1,5 @@
 import java.util.*;
+import java.io.*;
 
 public class MainServer {
   public static void main (String[] args){
@@ -23,6 +24,11 @@ public class MainServer {
       System.out.println("Port number must be a number between 1025 and 65535.");
       System.out.println();
       System.exit(-1);
+    }
+
+    File tempDir = new File(System.getProperty("user.dir") + File.separator + "temp");
+    if (!tempDir.exists()){
+      tempDir.mkdir();
     }
 
     ServerHandler server = new ServerHandler(portNumber);

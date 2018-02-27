@@ -25,3 +25,4 @@ hs_err_pid*
 cliente/downloads/
 cliente/temp/
 servidor/books/
+servidor/temp/
