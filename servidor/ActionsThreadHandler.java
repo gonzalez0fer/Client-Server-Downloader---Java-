@@ -141,6 +141,8 @@ class ActionsThreadHandler extends Thread {
         count = (long) bookObj.get(clientName);
         count++;
         bookObj.put(clientName, count);
+      } else {
+        bookObj.put(clientName, 1);
       }
     } else {
       bookObj.put(clientName, 1);
