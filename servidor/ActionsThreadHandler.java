@@ -35,7 +35,8 @@ class ActionsThreadHandler extends Thread {
           pw.println(getFiles());
         } else if (inputLine.equals("getFileSize")) {
           fileName = br.readLine();
-          dos.writeLong(getFileSize(fileName));
+          pw.println(getFileSize(fileName));
+          // dos.writeLong(getFileSize(fileName));
         } else if (inputLine.equals("getFile")) {
           fileName = br.readLine();
           fileSize = Long.parseLong(br.readLine());

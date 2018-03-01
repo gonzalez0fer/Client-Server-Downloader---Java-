@@ -10,6 +10,8 @@ import org.json.simple.parser.ParseException;
 
 class ClientThreadHandler extends Thread {
   private String ip;
+  private String ip2;
+  private String ip3;
   private int portNumber1;
   private int portNumber2;
   private int portNumber3;
@@ -23,6 +25,8 @@ class ClientThreadHandler extends Thread {
 
   public ClientThreadHandler(
     String ip, 
+    String ip2, 
+    String ip3, 
     int portNumber1, 
     int portNumber2, 
     int portNumber3, 
@@ -31,6 +35,8 @@ class ClientThreadHandler extends Thread {
   ) {
     super("ClientThreadHandler");
     this.ip = ip;
+    this.ip2 = ip2;
+    this.ip3 = ip3;
     this.portNumber1 = portNumber1;
     this.portNumber2 = portNumber2;
     this.portNumber3 = portNumber3;
@@ -40,54 +46,59 @@ class ClientThreadHandler extends Thread {
 
   @Override
   public void run() {
-    int tries = 3;
-
-    //Get file size from the server, whichever server finds it first.
-    if (!getFileSize(portNumber1) && !getFileSize(portNumber2) && !getFileSize(portNumber3)) {
-      // System.out.println("Couldn't find book " + bookName + " or couldn't stablish connection to the servers.");
-      return;
-    }
-    if (fileSize == 0) return;
-    currentBytesRead = fileSize;
+    int tries = 3;    
 
     // Download file concurrently
-    while (currentBytesRead > 0) {
-      if (downloadFile(portNumber1, 1)) {
+    do {
+      if (getFileSize(ip, portNumber1) && downloadFile(ip, portNumber1, 1)) {
         continue;
       }
-      if (downloadFile(portNumber2, 2)) 
+      if (getFileSize(ip2, portNumber2) && downloadFile(ip2, portNumber2, 2)) 
       {
         continue;
       }
-      if (downloadFile(portNumber3, 3)) {
+      if (getFileSize(ip3, portNumber3) && downloadFile(ip3, portNumber3, 3)) {
         continue;
       }
+      System.out.println();
       if (tries < 1) {
-        // System.out.println("Couldn't download book " + bookName + ".");
+        System.out.println("Couldn't download book " + bookName + ".");
         return;
       }
+      if (currentBytesRead <= 0) {
+      	System.out.println("Book " + bookName + " couldn't be found.");
+      } else {
+      	System.out.println("Connection failed, will retry in " + (6000/(tries*1000)) + " seconds.");
+      }
+
       try {
         sleep(6000 / tries); //Trying to connect in 6 secs divided by the number of tries left
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
       tries--;
-    }
+    } while (currentBytesRead > 0);
   }
 
 //#region Get file size method
-  private boolean getFileSize(int portNumber) {
+  private boolean getFileSize(String ip, int portNumber) {
     try (
       Socket socket = new Socket(ip, portNumber);
       InputStream is = socket.getInputStream();
       OutputStream os = socket.getOutputStream();
       DataInputStream dis = new DataInputStream(is);
+      BufferedReader br = new BufferedReader(new InputStreamReader(is));
       PrintWriter pw = new PrintWriter(os, true);
     ) {
       pw.println("getFileSize");
       pw.println(bookName);
 
-      this.fileSize = dis.readLong(); //Get file size from the server
+      // this.fileSize = dis.readLong(); //Get file size from the server
+      this.fileSize = Long.parseLong(br.readLine()); //Get file size from the server
+      if (this.fileSize <= 0) {
+        return false;      	
+      }
+      currentBytesRead = fileSize;
     } catch (UnknownHostException e) {
       return false;
     } catch (IOException e) {
@@ -101,7 +112,7 @@ class ClientThreadHandler extends Thread {
 //#endregion
 
 //#region Download file method
-  private boolean downloadFile(int portNumber, int serverNumber) {
+  private boolean downloadFile(String ip, int portNumber, int serverNumber) {
     try (
       Socket socket = new Socket(ip, portNumber);
       InputStream is = socket.getInputStream();

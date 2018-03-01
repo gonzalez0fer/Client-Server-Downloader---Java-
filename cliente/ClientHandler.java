@@ -12,6 +12,8 @@ public class ClientHandler {
   int portNumber3;
   String clientName = "Someone";
   final String ip = "127.0.0.1";
+  final String ip2 = "127.0.0.1";
+  final String ip3 = "127.0.0.1";
   final String ROOT_DIRECTORY = System.getProperty("user.dir");
   final String TEMP_DIRECTORY = System.getProperty("user.dir") + File.separator + "temp";
 
@@ -48,9 +50,9 @@ public class ClientHandler {
         if (fromUser.equals("1")) {
           continue;
         } else if (fromUser.equals("2")) {
-          getBookList(portNumber1);
-          getBookList(portNumber2);
-          getBookList(portNumber3);
+          getBookList(ip, portNumber1);
+          getBookList(ip2, portNumber2);
+          getBookList(ip3, portNumber3);
         } else if (fromUser.equals("3")) {
           System.out.print("Indicate file name: ");
           downloadBook(stdIn.readLine());
@@ -113,7 +115,7 @@ public class ClientHandler {
 //#endregion
 
 //#region Get list of books method
-  private void getBookList(int portNumber) {
+  private void getBookList(String ip, int portNumber) {
     try (
       Socket socket = new Socket(ip, portNumber);
       InputStream is = socket.getInputStream();
@@ -145,7 +147,7 @@ public class ClientHandler {
   private void downloadBook(String bookName) {
     try {
       new ClientThreadHandler(
-        ip, portNumber1, portNumber2, portNumber3, bookName, clientName
+        ip, ip2, ip3, portNumber1, portNumber2, portNumber3, bookName, clientName
       ).start();
     } catch (Exception e) {
       System.err.println(e.getMessage());
